@@ -9,7 +9,7 @@
 00 00       | port
 00          | Flag (x32 x64)
 00 00       | Version
-00 00       |
+00 00       | Build
 00 00 00 00 | Prefix
 00 00 00 00 | Module Handler A ptr
 00 00 00 00 | Get Proc Address ptr
@@ -57,3 +57,5 @@ Decoding the package with AES the following sequence is taken.
 References
 - https://github.com/b1tg/cobaltstrike-beacon-rust/blob/main/src/main.rs
 - https://github.com/darkr4y/geacon
+- https://github.com/kyxiaxiang/Beacon_Source
+- https://unit42.paloaltonetworks.com/cobalt-strike-metadata-encryption-decryption/

