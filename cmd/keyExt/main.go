@@ -4,10 +4,16 @@ import (
 	"belin/keys"
 	"encoding/base64"
 	"fmt"
+	"os"
 )
 
 func main() {
-	priv, publ, err := keys.Extract("cobaltstrike.beacon_keys")
+	if len(os.Args) < 2 {
+		fmt.Println("Provide the key file: main.go path/to/.cobaltstrike.beacon_keys")
+		return
+	}
+
+	priv, publ, err := keys.Extract(os.Args[1])
 	if err != nil {
 		fmt.Println(err.Error())
 		return
