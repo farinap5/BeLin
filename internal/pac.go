@@ -39,3 +39,8 @@ func callTask(mt *metadata.Metadata, r *requester.ReqProfile) (*http.Response, e
 
 	return resp, nil
 }
+
+
+func sendResult(r *requester.ReqProfile, data []byte) (*http.Response, error) {
+	return r.Post(data)
+}

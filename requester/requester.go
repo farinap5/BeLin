@@ -4,17 +4,18 @@ import (
 	"belin/config"
 	"bytes"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 )
 
-func New() ReqProfile {
+func New(id int) ReqProfile {
 	GETURL := "http://" + config.HOST + config.GPTH
 	PSTURL := "http://" + config.HOST + config.PPTH
 
 	newReq := ReqProfile{
 		GETURL: GETURL,
-		PSTURL: PSTURL, 
+		PSTURL: PSTURL+fmt.Sprintf("%d", id), 
 		Agent: "aaaa",
 		Client: &http.Client{Timeout: time.Duration(config.TOUT) * time.Second},
 	}
@@ -23,7 +24,7 @@ func New() ReqProfile {
 }
 
 func (r *ReqProfile) Post(data []byte) (*http.Response, error) {
-	req, err := http.NewRequest("GET", r.PSTURL, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", r.PSTURL, bytes.NewBuffer(data))
 	if err != nil {return nil, err}
  
 	req.Header.Set("User-Agent", r.Agent)
@@ -32,7 +33,7 @@ func (r *ReqProfile) Post(data []byte) (*http.Response, error) {
 	resp, err := r.Client.Do(req)
 	if err != nil {return nil, err}
 
-	if resp.Request.Response.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New("Code not 200")
 	}
 

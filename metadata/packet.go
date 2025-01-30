@@ -42,7 +42,7 @@ func ParseTask(buf *bytes.Buffer, packLen *uint32) (uint32, []byte, error) {
 }
 
 
-func PackResp(enc *encrypt.Enc, packType int, data []byte) error {
+func PackResp(enc *encrypt.Enc, packType int, data []byte) ([]byte, error) {
 	Counter += 1
 	
 	counterB := make([]byte, 4)
@@ -61,15 +61,20 @@ func PackResp(enc *encrypt.Enc, packType int, data []byte) error {
 		replyTypeB,
 		data,
 	}
-
-
 	pack := bytes.Join(rawPack, []byte(""))
 
 	encPack, err := enc.AesCBCEncrypt(pack, enc.AesKey)
-	if err != nil {return err}
+	if err != nil {return nil, err}
 
 
-	finalLen := len(encPack)
+	/* 
+		cut the zero because Golang's AES encrypt func will padding IV
+		(block size in this situation is 16 bytes) before the cipher
+		https://github.com/darkr4y/geacon/blob/master/cmd/packet/packet.go
+	*/
+	encPack = encPack[16:]
+
+	finalLen := len(encPack) + 16
 	finalLenB := make([]byte, 4)
 	binary.BigEndian.PutUint32(finalLenB, uint32(finalLen))
 
@@ -79,4 +84,6 @@ func PackResp(enc *encrypt.Enc, packType int, data []byte) error {
 		encPack,
 		hmacHash,
 	}
+
+	return bytes.Join(resp, []byte("")), nil
 }

