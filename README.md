@@ -30,3 +30,44 @@ go build -o name -ldflags="-s -w" cmd/main/main.go
 ```
 
 Have in mind that this "beacon" will use the default CS malleable profile, placing the metadata in cookie and posting the response with the query string `id` as the session/beacon id.
+
+```js
+http-get {
+	set uri "/load";
+
+	client {
+		metadata {
+			base64;
+			header "Cookie";
+		}
+	}
+
+	server {
+		header "Content-Type" "application/octet-stream";
+		output {
+			print;
+		}
+	}
+}
+```
+
+```js
+http-post {
+	set uri "/submit.php";
+	client {
+		header "Content-Type" "application/octet-stream";
+		id {
+			parameter "id";
+		}
+		output {
+			print;
+		}
+	}
+	server {
+		header "Content-Type" "text/html";
+		output {
+			print;
+		}
+	}
+}
+```
